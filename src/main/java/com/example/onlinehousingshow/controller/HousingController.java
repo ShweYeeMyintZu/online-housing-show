@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -45,16 +46,16 @@ public class HousingController {
 
 
     // Endpoint to update existing housing
-    @PutMapping("/owner/change/{housingId}")
-    public ResponseEntity<Housing> updateHousing(@PathVariable int housingId,
-                                                 @RequestBody HousingDTO housingDTO) {
-        Housing updatedHousing = housingService.updateHousing(housingId, housingDTO);
-        if (updatedHousing != null) {
-            return ResponseEntity.ok(updatedHousing);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
+//    @PutMapping("/owner/change/{housingId}")
+//    public ResponseEntity<Housing> updateHousing(@PathVariable int housingId,
+//                                                 @RequestBody HousingDTO housingDTO) {
+//        Housing updatedHousing = housingService.updateHousing(housingId, housingDTO);
+//        if (updatedHousing != null) {
+//            return ResponseEntity.ok(updatedHousing);
+//        } else {
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
     // Private API for the owner to view their housing list with pagination and filtering
     @GetMapping("/owner")
     public ResponseEntity<List<Housing>> getOwnerHousings(
@@ -65,12 +66,12 @@ public class HousingController {
             @RequestParam(value = "masterRoom", required = false) Integer masterRoom,
             @RequestParam(value = "singleRoom", required = false) Integer singleRoom,
             @RequestParam(value = "amount", required = false) Double amount,
-            @RequestParam(value = "postedDate", required = false) LocalDate postedDate,
+            @RequestParam(value = "postedDate", required = false) Date createdDate,
             @AuthenticationPrincipal Owner authenticatedOwner
     ) {
         // Fetch the housing records for the authenticated owner with pagination and filtering
         Page<Housing> ownerHousings = housingService.getOwnerHousings(authenticatedOwner.getId(),
-                PageRequest.of(page, size), housingName, floors, masterRoom, singleRoom, amount, postedDate);
+                PageRequest.of(page, size), housingName, floors, masterRoom, singleRoom, amount, createdDate);
 
         return ResponseEntity.ok(ownerHousings.getContent());
     }
@@ -84,11 +85,11 @@ public class HousingController {
             @RequestParam(value = "masterRoom", required = false) Integer masterRoom,
             @RequestParam(value = "singleRoom", required = false) Integer singleRoom,
             @RequestParam(value = "amount", required = false) Double amount,
-            @RequestParam(value = "postedDate", required = false) LocalDate postedDate
+            @RequestParam(value = "postedDate", required = false) Date createdDate
     ) {
         // Fetch all housing records with pagination and filtering
         Page<Housing> allHousings = housingService.getAllHousings(
-                PageRequest.of(page, size), housingName, floors, masterRoom, singleRoom, amount, postedDate);
+                PageRequest.of(page, size), housingName, floors, masterRoom, singleRoom, amount, createdDate);
 
         return ResponseEntity.ok(allHousings);
     }
