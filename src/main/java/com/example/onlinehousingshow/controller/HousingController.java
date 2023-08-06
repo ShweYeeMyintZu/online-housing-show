@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,7 @@ import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/housings")
@@ -61,40 +63,29 @@ public class HousingController {
     }
     // Private API for the owner to view their housing list with pagination and filtering
     @GetMapping("/owner")
-    public ResponseEntity<List<Housing>> getOwnerHousings(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size,
-            @RequestParam(value = "housingName", required = false) String housingName,
-            @RequestParam(value = "floors", required = false) Integer floors,
-            @RequestParam(value = "masterRoom", required = false) Integer masterRoom,
-            @RequestParam(value = "singleRoom", required = false) Integer singleRoom,
-            @RequestParam(value = "amount", required = false) Double amount,
-            @RequestParam(value = "createdDate", required = false) Date createdDate,
-            @AuthenticationPrincipal Owner authenticatedOwner
-    ) {
-        // Fetch the housing records for the authenticated owner with pagination and filtering
-        Page<Housing> ownerHousings = housingService.getOwnerHousings(authenticatedOwner.getId(),
-                PageRequest.of(page, size), housingName, floors, masterRoom, singleRoom, amount, createdDate);
-
-        return ResponseEntity.ok(ownerHousings.getContent());
+    public List<HousingDTO> GetHousingListByOwnerUserName(@RequestHeader HttpHeaders headers,
+                                                @RequestParam Optional<String> housingName,
+                                                @RequestParam("numberOfFloors") Optional<Integer> floors,
+                                                @RequestParam Optional<Integer> masterRoom,
+                                                @RequestParam Optional<Integer> singleRoom,
+                                                @RequestParam Optional<Double> amount,
+                                                @RequestParam Optional<Date> createdDate,
+                                                @RequestParam(required = false,defaultValue = "0")int current,
+                                                @RequestParam(required = false,defaultValue = "2")int size) {
+        return housingService.getOwnerHousing(headers, jwtSecret, housingName, floors, masterRoom, singleRoom, amount, createdDate, current, size);
     }
-    // Public API for visitors to view all housing list with pagination and search
+        // Public API for visitors to view all housing list with pagination and search
     @GetMapping("/public")
-    public ResponseEntity<Page<Housing>> getAllHousings(@RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size,
-            @RequestParam(value = "housingName", required = false) String housingName,
-            @RequestParam(value = "floors", required = false) Integer floors,
-            @RequestParam(value = "masterRoom", required = false) Integer masterRoom,
-            @RequestParam(value = "singleRoom", required = false) Integer singleRoom,
-            @RequestParam(value = "amount", required = false) Double amount,
-            @RequestParam(value = "createdDate", required = false) Date createdDate
-    ) {
-        // Fetch all housing records with pagination and filtering
-        Page<Housing> allHousings = housingService.getAllHousings(
-                PageRequest.of(page, size), housingName, floors, masterRoom, singleRoom, amount, createdDate);
-
-        return ResponseEntity.ok(allHousings);
-    }
+        public List<HousingDTO> findAll(@RequestParam Optional<String> housingName,
+                @RequestParam("numberOfFloors") Optional<Integer> floors,
+                @RequestParam Optional<Integer> masterRoom,
+                @RequestParam Optional<Integer> singleRoom,
+                @RequestParam Optional<Double> amount,
+                @RequestParam Optional<Date> createdDate,
+        @RequestParam(required = false,defaultValue = "0")int current,
+        @RequestParam(required = false,defaultValue = "2")int size){
+            return housingService.getAllHousing(housingName,floors,masterRoom,singleRoom,amount,createdDate,current,size);
+        }
 
 
 }

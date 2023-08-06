@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 public interface HousingService {
 
@@ -17,20 +19,17 @@ public interface HousingService {
     HousingDTO deleteHousing(int housingId,HttpHeaders headers,String loginToken);
 
 
-    Page<Housing> getAllHousings(Pageable pageable,
-                                 String housingName, Integer floors,
-                                 Integer masterRoom, Integer singleRoom,
-                                 Double amount, Date createdDate);
 
-    Page<Housing> getHousingsByFilter(String housingName, Integer numberOfFloors,
-                                      Integer numberOfMasterRoom, Integer numberOfSingleRoom,
-                                      Double amount, Date createdDate, Pageable pageable);
+    List<HousingDTO> getAllHousing(Optional<String> housingName, Optional<Integer> floors,
+                                   Optional<Integer> masterRoom, Optional<Integer> singleRoom,
+                                   Optional<Double> amount, Optional<Date> createdDate,
+                                   int current, int size);
 
-
-    Page<Housing> getOwnerHousings(int ownerId, Pageable pageable,
-                                   String housingName, Integer floors,
-                                   Integer masterRoom, Integer singleRoom,
-                                   Double amount, Date createdDate);
+    List<HousingDTO> getOwnerHousing(HttpHeaders headers, String loginToken,
+                                     Optional<String> housingName, Optional<Integer> floors,
+                                     Optional<Integer> masterRoom, Optional<Integer> singleRoom,
+                                     Optional<Double> amount, Optional<Date> createdDate,
+                                     int current, int size);
 }
 
 
