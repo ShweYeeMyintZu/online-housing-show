@@ -6,6 +6,7 @@ import com.example.onlinehousingshow.dto.HousingMapper;
 import com.example.onlinehousingshow.model.Housing;
 import com.example.onlinehousingshow.model.Owner;
 import com.example.onlinehousingshow.security.JwtTokenProvider;
+import com.example.onlinehousingshow.specifications.HousingSpecifications;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -100,35 +101,57 @@ public class HousingServiceImpl implements HousingService {
 
         return HousingDTO.housingData(existingHousing);
     }
-
     @Override
     public List<HousingDTO> getAllHousing(Optional<String> housingName, Optional<Integer> floors,
                                           Optional<Integer> masterRoom, Optional<Integer> singleRoom,
                                           Optional<Double> amount, Optional<Date> createdDate,
-                                          int current, int size){
-        var specification = withHousingName(housingName).and(withFloors(floors)).and(withMasterRoom(masterRoom))
-                .and(withSingleRoom(singleRoom)).and(withAmount(amount)).and(withCreatedDate(createdDate));
-        return housingRepository.findAll(specification, PageRequest.of(current,size)).stream()
-                .map(existinghousing -> HousingDTO.housingData(existinghousing)).collect(Collectors.toList());
+                                          int current, int size) {
+        Specification<Housing> spec = Specification.where(
+                HousingSpecifications.withHousingName(housingName)
+                        .and(HousingSpecifications.withFloors(floors))
+                        .and(HousingSpecifications.withMasterRoom(masterRoom))
+                        .and(HousingSpecifications.withSingleRoom(singleRoom))
+                        .and(HousingSpecifications.withAmount(amount))
+                        .and(HousingSpecifications.withCreatedDate(createdDate))
+        );
+
+        Pageable pageable = PageRequest.of(current, size);
+        return housingRepository.findAll(spec, pageable)
+                .stream()
+                .map(HousingDTO::housingData)
+                .collect(Collectors.toList());
     }
+
     @Override
     public List<HousingDTO> getOwnerHousing(HttpHeaders headers, String loginToken,
                                             Optional<String> housingName, Optional<Integer> floors,
                                             Optional<Integer> masterRoom, Optional<Integer> singleRoom,
                                             Optional<Double> amount, Optional<Date> createdDate,
-                                            int current, int size){
+                                            int current, int size) {
+        // ... other implementation as before
+
+        Specification<Housing> spec = Specification.where(
+                HousingSpecifications.withHousingName(housingName)
+                        .and(HousingSpecifications.withFloors(floors))
+                        .and(HousingSpecifications.withMasterRoom(masterRoom))
+                        .and(HousingSpecifications.withSingleRoom(singleRoom))
+                        .and(HousingSpecifications.withAmount(amount))
+                        .and(HousingSpecifications.withCreatedDate(createdDate))
+        );
         String token = headers.get("Authorization").get(0);
         String jwt = token.replace("Bearer","");
         String ownerUserName = Jwts.parser().setSigningKey(loginToken).parseClaimsJws(jwt).getBody().getSubject();
 
-        Specification<Housing> spec = withHousingName(housingName).and(withFloors(floors)).and(withMasterRoom(masterRoom))
-                .and(withSingleRoom(singleRoom)).and(withAmount(amount)).and(withCreatedDate(createdDate));
-
-        return housingRepository.findByOwnerUserName(ownerUserName,housingName.orElse(null),floors.orElse(null)
-                        ,masterRoom.orElse(null),singleRoom.orElse(null),amount.orElse(null),createdDate.orElse(null), PageRequest.of(current,size))
-                .stream().map(existingHousing -> HousingDTO.housingData(existingHousing)).collect(Collectors.toList());
+        Pageable pageable = PageRequest.of(current, size);
+        return housingRepository.findByOwnerUserName(ownerUserName, housingName.orElse(null), floors.orElse(null),
+                        masterRoom.orElse(null), singleRoom.orElse(null), amount.orElse(null), createdDate.orElse(null), pageable)
+                .stream()
+                .map(HousingDTO::housingData)
+                .collect(Collectors.toList());
     }
-
-
 }
+
+
+
+
 
