@@ -1,5 +1,6 @@
 package com.example.onlinehousingshow.dao;
 
+import com.example.onlinehousingshow.dto.HousingDTO;
 import com.example.onlinehousingshow.model.Housing;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

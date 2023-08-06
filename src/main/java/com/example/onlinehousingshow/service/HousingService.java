@@ -5,7 +5,7 @@ import com.example.onlinehousingshow.model.Housing;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
-import java.time.LocalDate;
+
 import java.util.Date;
 
 public interface HousingService {
@@ -13,6 +13,9 @@ public interface HousingService {
     HousingDTO saveHousing(HousingMapper mapper, HttpHeaders headers, String loginToken);
 
     HousingDTO updateHousing(int housingId, HousingMapper housingMapper, HttpHeaders headers, String loginToken);
+
+    HousingDTO deleteHousing(int housingId,HttpHeaders headers,String loginToken);
+
 
     Page<Housing> getAllHousings(Pageable pageable,
                                  String housingName, Integer floors,

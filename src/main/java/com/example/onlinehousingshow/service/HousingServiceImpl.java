@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -52,6 +53,7 @@ public class HousingServiceImpl implements HousingService {
 
         }
 
+
     @Override
     public HousingDTO updateHousing(int housingId, HousingMapper housingMapper, HttpHeaders headers, String loginToken) {
         String token = headers.get("Authorization").get(0);
@@ -72,6 +74,31 @@ public class HousingServiceImpl implements HousingService {
         }).orElseThrow(EntityNotFoundException::new));
     }
 
+
+    @Override
+    public HousingDTO deleteHousing(int housingId, HttpHeaders headers, String loginToken) {
+        String token = headers.get("Authorization").get(0);
+        String jwt = token.replace("Bearer", "");
+        String ownerUserName = Jwts.parser().setSigningKey(loginToken).parseClaimsJws(jwt).getBody().getSubject();
+
+        // Retrieve the existing housing by ID
+        Housing existingHousing = housingRepository.findById(housingId)
+                .orElseThrow(EntityNotFoundException::new);
+
+        // Check if the authenticated owner is the owner of the housing
+        if (!existingHousing.getOwner().getOwnerUserName().equals(ownerUserName)) {
+            // If the authenticated owner is not the owner of the housing, throw an exception or return an error response
+            throw new AccessDeniedException("You are not authorized to delete this housing.");
+        }
+
+        housingRepository.delete(existingHousing);
+
+        return HousingDTO.housingData(existingHousing);
+    }
+
+
+
+
     @Override
     public Page<Housing> getAllHousings(Pageable pageable,
                                         String housingName, Integer floors,
@@ -84,7 +111,6 @@ public class HousingServiceImpl implements HousingService {
                 .and(HousingSpecifications.withAmount(amount))
                 .and(HousingSpecifications.withCreatedDate(createdDate));
 
-        // Use the custom findAll method with specifications and pagination
         return housingRepository.findAll(spec, pageable);
     }
 
