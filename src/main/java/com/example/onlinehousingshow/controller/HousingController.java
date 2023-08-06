@@ -46,16 +46,14 @@ public class HousingController {
 
 
     // Endpoint to update existing housing
-//    @PutMapping("/owner/change/{housingId}")
-//    public ResponseEntity<Housing> updateHousing(@PathVariable int housingId,
-//                                                 @RequestBody HousingDTO housingDTO) {
-//        Housing updatedHousing = housingService.updateHousing(housingId, housingDTO);
-//        if (updatedHousing != null) {
-//            return ResponseEntity.ok(updatedHousing);
-//        } else {
-//            return ResponseEntity.notFound().build();
-//        }
-//    }
+    @PutMapping("/owner/change/{housingId}")
+    public HousingDTO updateHousing(@PathVariable int housingId,
+                                                 @RequestBody @Validated HousingMapper mapper, BindingResult result, @RequestHeader HttpHeaders headers) {
+        if (result.hasErrors()){
+            throw new EntityNotFoundException();
+        }
+        return housingService.updateHousing(housingId,mapper,headers,jwtSecret);
+    }
     // Private API for the owner to view their housing list with pagination and filtering
     @GetMapping("/owner")
     public ResponseEntity<List<Housing>> getOwnerHousings(
@@ -93,20 +91,6 @@ public class HousingController {
 
         return ResponseEntity.ok(allHousings);
     }
-
-    private String extractJwtToken(HttpHeaders headers) {
-        // Implement your logic to extract the JWT token from the headers
-        // For example, if you are using an "Authorization" header with "Bearer <token>", you can do this:
-        List<String> authorizationHeaders = headers.get(HttpHeaders.AUTHORIZATION);
-        if (authorizationHeaders != null && !authorizationHeaders.isEmpty()) {
-            String authorizationHeader = authorizationHeaders.get(0);
-            if (authorizationHeader.startsWith("Bearer ")) {
-                return authorizationHeader.substring(7);
-            }
-        }
-        return null;
-    }
-
 
 
 }

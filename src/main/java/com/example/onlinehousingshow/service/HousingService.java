@@ -12,7 +12,7 @@ public interface HousingService {
 
     HousingDTO saveHousing(HousingMapper mapper, HttpHeaders headers, String loginToken);
 
-    HousingDTO updateHousing(int housingId, HousingDTO housingDTO);
+    HousingDTO updateHousing(int housingId, HousingMapper housingMapper, HttpHeaders headers, String loginToken);
 
     Page<Housing> getAllHousings(Pageable pageable,
                                  String housingName, Integer floors,

@@ -14,8 +14,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+
+import javax.persistence.EntityNotFoundException;
 import java.util.Date;
-import java.time.LocalDate;
 
 @Service
 public class HousingServiceImpl implements HousingService {
@@ -52,32 +53,24 @@ public class HousingServiceImpl implements HousingService {
         }
 
     @Override
-    public HousingDTO updateHousing(int housingId, HousingDTO housingDTO) {
-        return null;
+    public HousingDTO updateHousing(int housingId, HousingMapper housingMapper, HttpHeaders headers, String loginToken) {
+        String token = headers.get("Authorization").get(0);
+        String jwt = token.replace("Bearer","");
+        String ownerUserName = Jwts.parser().setSigningKey(loginToken).parseClaimsJws(jwt).getBody().getSubject();
+
+        return HousingDTO.housingData(housingRepository.findById(housingId).map(existingHouse->{
+            existingHouse.setHousingName(housingMapper.getHousingName());
+            existingHouse.setAddress(housingMapper.getAddress());
+            existingHouse.setNumberOfFloors(housingMapper.getNumberOfFloors());
+            existingHouse.setNumberOfMasterRoom(housingMapper.getNumberOfMasterRoom());
+            existingHouse.setNumberOfSingleRoom(housingMapper.getNumberOfSingleRoom());
+            existingHouse.setAmount(housingMapper.getAmount());
+            Owner owner = ownerRepository.findByOwnerUserName(ownerUserName);
+            existingHouse.setOwner(owner);
+            existingHouse.setUpdatedDate(new Date());
+            return existingHouse;
+        }).orElseThrow(EntityNotFoundException::new));
     }
-
-
-//    @Override
-//    public HousingDTO updateHousing(int housingId, HousingMapper housingMapper) {
-//        Housing existingHousing = housingRepository.findById(housingId).orElse(null);
-//        if (existingHousing == null) {
-//            return null;
-//        }
-//        if (!existingHousing.getOwner().getUsername().equals(housingMapper.getOwnerusername())) {
-//            throw new RuntimeException("You are not authorized to update this housing.");
-//        }
-//
-//        // Update the existingHousing object with the data from the housingDTO
-//        existingHousing.setHousingName(housingDTO.getHousingName());
-//        existingHousing.setAddress(housingDTO.getAddress());
-//        existingHousing.setNumberOfFloors(housingDTO.getNumberOfFloors());
-//        existingHousing.setNumberOfMasterRoom(housingDTO.getNumberOfMasterRoom());
-//        existingHousing.setNumberOfSingleRoom(housingDTO.getNumberOfSingleRoom());
-//        existingHousing.setAmount(housingDTO.getAmount());
-//
-//        // Save the updated housing to the database
-//        return housingRepository.save(existingHousing);
-//    }
 
     @Override
     public Page<Housing> getAllHousings(Pageable pageable,
