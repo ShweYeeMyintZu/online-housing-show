@@ -36,7 +36,7 @@ public class HousingController {
     private HousingService housingService;
     @Value("${app.jwtSecret}")
     private String jwtSecret;
-
+    //create
     @PostMapping("/create")
     public HousingDTO saveHousing(@RequestBody @Validated HousingMapper mapper, BindingResult result, @RequestHeader HttpHeaders headers) {
         if (result.hasErrors()){
@@ -44,10 +44,7 @@ public class HousingController {
         }
         return housingService.saveHousing(mapper,headers,jwtSecret);
     }
-
-
-
-    // Endpoint to update existing housing
+    //Update
     @PutMapping("/owner/change/{housingId}")
     public HousingDTO updateHousing(@PathVariable int housingId,
                                                  @RequestBody @Validated HousingMapper mapper, BindingResult result, @RequestHeader HttpHeaders headers) {
@@ -56,12 +53,12 @@ public class HousingController {
         }
         return housingService.updateHousing(housingId,mapper,headers,jwtSecret);
     }
-
+    //delete
     @PutMapping("/owner/delete/{housingId}")
     public HousingDTO deleteHousing(@PathVariable int housingId, @RequestHeader HttpHeaders headers) {
         return housingService.deleteHousing(housingId, headers, jwtSecret);
     }
-    // Private API for the owner to view their housing list with pagination and filtering
+    // Private API
     @GetMapping("/owner")
     public List<HousingDTO> GetHousingListByOwnerUserName(@RequestHeader HttpHeaders headers,
                                                 @RequestParam Optional<String> housingName,
@@ -74,7 +71,7 @@ public class HousingController {
                                                 @RequestParam(required = false,defaultValue = "2")int size) {
         return housingService.getOwnerHousing(headers, jwtSecret, housingName, floors, masterRoom, singleRoom, amount, createdDate, current, size);
     }
-        // Public API for visitors to view all housing list with pagination and search
+        // Public API for visitors
     @GetMapping("/public")
         public List<HousingDTO> findAll(@RequestParam Optional<String> housingName,
                 @RequestParam("numberOfFloors") Optional<Integer> floors,
